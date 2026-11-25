@@ -33,17 +33,17 @@ class Library {
   - members : HashMap<String, Member>
   + addItem(item : LibraryItem) : void
   + addMember(member : Member) : void
-  + borrow(memberId : String, itemId : String) : int
-  + returnItem(itemId : String) : ReturnResult
+  + borrow(memberId : String, itemId : String) : int {throws LibraryException}
+  + returnItem(itemId : String) : ReturnResult {throws LibraryException}
   + advance(days : int) : int
-  + reserve(memberId : String, itemId : String) : void
+  + reserve(memberId : String, itemId : String) : void {throws LibraryException}
   + search(text : String) : List<LibraryItem>
-  + loansOf(memberId : String) : List<Borrowable>
+  + loansOf(memberId : String) : List<Borrowable> {throws MemberNotFoundException}
   + overdue() : List<Borrowable>
   + inventory() : Collection<LibraryItem>
   + getToday() : int
-  - findItem(id : String) : LibraryItem
-  - findMember(id : String) : Member
+  - findItem(id : String) : LibraryItem {throws ItemNotFoundException}
+  - findMember(id : String) : Member {throws MemberNotFoundException}
 }
 
 class ReturnResult {
@@ -66,17 +66,17 @@ abstract class LibraryItem {
   + {abstract} getStatus() : String
 }
 
-interface Borrowable <<interface>> {
+interface Borrowable {
   + getId() : String
   + getTitle() : String
   + getFinePerDay() : int
   + isOnLoan() : boolean
   + getBorrower() : Member
   + getDueDay() : int
-  + checkOut(member : Member, dueDay : int) : void
-  + checkIn() : void
+  + checkOut(member : Member, dueDay : int) : void {throws ItemNotAvailableException}
+  + checkIn() : void {throws ItemNotOnLoanException}
   + fineAsOf(today : int) : int
-  + reserve(member : Member) : void
+  + reserve(member : Member) : void {throws ReservationNotAllowedException}
   + nextEligibleReserver() : Member
 }
 
@@ -87,10 +87,10 @@ abstract class BorrowableItem {
   + isOnLoan() : boolean
   + getBorrower() : Member
   + getDueDay() : int
-  + checkOut(member : Member, dueDay : int) : void
-  + checkIn() : void
+  + checkOut(member : Member, dueDay : int) : void {throws ItemNotAvailableException}
+  + checkIn() : void {throws ItemNotOnLoanException}
   + fineAsOf(today : int) : int
-  + reserve(member : Member) : void
+  + reserve(member : Member) : void {throws ReservationNotAllowedException}
   + nextEligibleReserver() : Member
   + getStatus() : String
   + {abstract} getFinePerDay() : int
@@ -127,7 +127,7 @@ abstract class Member {
   + {abstract} getMaxItems() : int
   + {abstract} getLoanPeriod() : int
   + canBorrow() : boolean
-  + ensureCanBorrow() : void
+  + ensureCanBorrow() : void {throws BorrowLimitExceededException}
   + holds(item : Borrowable) : boolean
   + addItem(item : Borrowable) : void
   + removeItem(item : Borrowable) : void
@@ -153,7 +153,7 @@ class Faculty {
 note bottom of Faculty : max 5, 30 days
 
 ' ===================== Exceptions =====================
-class Exception
+class Exception <<java.lang>>
 class LibraryException {
   + LibraryException(message : String)
 }
@@ -206,7 +206,7 @@ Library ..> ReturnResult : returns
 
 ' The loan: two-way link between a member and a borrowable item
 Member "0..1 borrower" <--> "0..max items" Borrowable : loan
-Borrowable o-- "0..* reservations" Member : queue
+BorrowableItem o-- "0..* reservations" Member : queue
 
 ReturnResult --> "0..1" Member : issuedTo
 
@@ -214,7 +214,9 @@ ReturnResult --> "0..1" Member : issuedTo
 CommandProcessor ..> LibraryException : catches
 Library ..> ItemNotFoundException : throws
 Library ..> MemberNotFoundException : throws
-BorrowableItem ..> ItemNotAvailableException : throws
+Library ..> ItemNotAvailableException : throws\n("<id> cannot be borrowed")
+Library ..> ItemNotOnLoanException : throws\n(RETURN of a ReferenceBook)
+BorrowableItem ..> ItemNotAvailableException : throws\n("<id> is on loan")
 BorrowableItem ..> ItemNotOnLoanException : throws
 BorrowableItem ..> ReservationNotAllowedException : throws
 Member ..> BorrowLimitExceededException : throws
