@@ -5,186 +5,175 @@
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
 skinparam shadowing false
-skinparam packageStyle rectangle
 hide empty members
 
 title Library Management System - Class Diagram
 
 ' ===================== Entry / Commands =====================
-package "app" {
-  class Main {
-    + {static} main(args : String[]) : void
-  }
+class Main {
+  + {static} main(args : String[]) : void
+}
 
-  class CommandProcessor {
-    - library : Library
-    + CommandProcessor(library : Library)
-    + run(in : Scanner) : void
-    - process(line : String) : String
-    - createMember(id : String, name : String, type : String) : Member
-    - formatSearch(items : List<LibraryItem>) : String
-    - formatLoans(items : List<Borrowable>) : String
-    - formatOverdue(items : List<Borrowable>) : String
-    - formatInventory(items : Collection<LibraryItem>) : String
-  }
+class CommandProcessor {
+  - library : Library
+  + CommandProcessor(library : Library)
+  + run(in : Scanner) : void
+  - process(line : String) : String
+  - createMember(id : String, name : String, type : String) : Member
+  - formatSearch(items : List<LibraryItem>) : String
+  - formatLoans(items : List<Borrowable>) : String
+  - formatOverdue(items : List<Borrowable>) : String
+  - formatInventory(items : Collection<LibraryItem>) : String
 }
 
 ' ===================== Core =====================
-package "core" {
-  class Library {
-    - today : int = 0
-    - items : TreeMap<String, LibraryItem>
-    - members : HashMap<String, Member>
-    + addItem(item : LibraryItem) : void
-    + addMember(member : Member) : void
-    + borrow(memberId : String, itemId : String) : int
-    + returnItem(itemId : String) : ReturnResult
-    + advance(days : int) : int
-    + reserve(memberId : String, itemId : String) : void
-    + search(text : String) : List<LibraryItem>
-    + loansOf(memberId : String) : List<Borrowable>
-    + overdue() : List<Borrowable>
-    + inventory() : Collection<LibraryItem>
-    + getToday() : int
-    - findItem(id : String) : LibraryItem
-    - findMember(id : String) : Member
-  }
+class Library {
+  - today : int = 0
+  - items : TreeMap<String, LibraryItem>
+  - members : HashMap<String, Member>
+  + addItem(item : LibraryItem) : void
+  + addMember(member : Member) : void
+  + borrow(memberId : String, itemId : String) : int
+  + returnItem(itemId : String) : ReturnResult
+  + advance(days : int) : int
+  + reserve(memberId : String, itemId : String) : void
+  + search(text : String) : List<LibraryItem>
+  + loansOf(memberId : String) : List<Borrowable>
+  + overdue() : List<Borrowable>
+  + inventory() : Collection<LibraryItem>
+  + getToday() : int
+  - findItem(id : String) : LibraryItem
+  - findMember(id : String) : Member
+}
 
-  class ReturnResult {
-    - fine : int
-    - issuedTo : Member
-    - newDueDay : int
-    + getFine() : int
-    + getIssuedTo() : Member
-    + getNewDueDay() : int
-    + hasReissue() : boolean
-  }
+class ReturnResult {
+  - fine : int
+  - issuedTo : Member
+  - newDueDay : int
+  + getFine() : int
+  + getIssuedTo() : Member
+  + getNewDueDay() : int
+  + hasReissue() : boolean
 }
 
 ' ===================== Items =====================
-package "items" {
-  abstract class LibraryItem {
-    - id : String
-    - title : String
-    + getId() : String
-    + getTitle() : String
-    + {abstract} getTypeName() : String
-    + {abstract} getStatus() : String
-  }
-
-  interface Borrowable <<interface>> {
-    + getId() : String
-    + getTitle() : String
-    + getFinePerDay() : int
-    + isOnLoan() : boolean
-    + getBorrower() : Member
-    + getDueDay() : int
-    + checkOut(member : Member, dueDay : int) : void
-    + checkIn() : void
-    + fineAsOf(today : int) : int
-    + reserve(member : Member) : void
-    + nextEligibleReserver() : Member
-  }
-
-  abstract class BorrowableItem {
-    - borrower : Member
-    - dueDay : int
-    - reservations : Queue<Member>
-    + isOnLoan() : boolean
-    + getBorrower() : Member
-    + getDueDay() : int
-    + checkOut(member : Member, dueDay : int) : void
-    + checkIn() : void
-    + fineAsOf(today : int) : int
-    + reserve(member : Member) : void
-    + nextEligibleReserver() : Member
-    + getStatus() : String
-    + {abstract} getFinePerDay() : int
-  }
-
-  class Book {
-    - author : String
-    + getFinePerDay() : int
-    + getTypeName() : String
-  }
-  note bottom of Book : fine = 2/day\ntype = "BOOK"
-
-  class Magazine {
-    - issue : String
-    + getFinePerDay() : int
-    + getTypeName() : String
-  }
-  note bottom of Magazine : fine = 1/day\ntype = "MAGAZINE"
-
-  class ReferenceBook {
-    - author : String
-    + getTypeName() : String
-    + getStatus() : String
-  }
-  note bottom of ReferenceBook : type = "REFERENCE"\nstatus = "NOT_BORROWABLE"
+abstract class LibraryItem {
+  - id : String
+  - title : String
+  + getId() : String
+  + getTitle() : String
+  + {abstract} getTypeName() : String
+  + {abstract} getStatus() : String
 }
+
+interface Borrowable <<interface>> {
+  + getId() : String
+  + getTitle() : String
+  + getFinePerDay() : int
+  + isOnLoan() : boolean
+  + getBorrower() : Member
+  + getDueDay() : int
+  + checkOut(member : Member, dueDay : int) : void
+  + checkIn() : void
+  + fineAsOf(today : int) : int
+  + reserve(member : Member) : void
+  + nextEligibleReserver() : Member
+}
+
+abstract class BorrowableItem {
+  - borrower : Member
+  - dueDay : int
+  - reservations : Queue<Member>
+  + isOnLoan() : boolean
+  + getBorrower() : Member
+  + getDueDay() : int
+  + checkOut(member : Member, dueDay : int) : void
+  + checkIn() : void
+  + fineAsOf(today : int) : int
+  + reserve(member : Member) : void
+  + nextEligibleReserver() : Member
+  + getStatus() : String
+  + {abstract} getFinePerDay() : int
+}
+
+class Book {
+  - author : String
+  + getFinePerDay() : int
+  + getTypeName() : String
+}
+note bottom of Book : fine = 2/day\ntype = "BOOK"
+
+class Magazine {
+  - issue : String
+  + getFinePerDay() : int
+  + getTypeName() : String
+}
+note bottom of Magazine : fine = 1/day\ntype = "MAGAZINE"
+
+class ReferenceBook {
+  - author : String
+  + getTypeName() : String
+  + getStatus() : String
+}
+note bottom of ReferenceBook : type = "REFERENCE"\nstatus = "NOT_BORROWABLE"
 
 ' ===================== Members =====================
-package "members" {
-  abstract class Member {
-    - id : String
-    - name : String
-    - items : List<Borrowable>
-    + getId() : String
-    + getName() : String
-    + {abstract} getMaxItems() : int
-    + {abstract} getLoanPeriod() : int
-    + canBorrow() : boolean
-    + ensureCanBorrow() : void
-    + holds(item : Borrowable) : boolean
-    + addItem(item : Borrowable) : void
-    + removeItem(item : Borrowable) : void
-    + getItems() : List<Borrowable>
-  }
-
-  class Student {
-    + getMaxItems() : int
-    + getLoanPeriod() : int
-  }
-  note bottom of Student : max 3, 14 days
-
-  class Staff {
-    + getMaxItems() : int
-    + getLoanPeriod() : int
-  }
-  note bottom of Staff : max 4, 21 days
-
-  class Faculty {
-    + getMaxItems() : int
-    + getLoanPeriod() : int
-  }
-  note bottom of Faculty : max 5, 30 days
+abstract class Member {
+  - id : String
+  - name : String
+  - items : List<Borrowable>
+  + getId() : String
+  + getName() : String
+  + {abstract} getMaxItems() : int
+  + {abstract} getLoanPeriod() : int
+  + canBorrow() : boolean
+  + ensureCanBorrow() : void
+  + holds(item : Borrowable) : boolean
+  + addItem(item : Borrowable) : void
+  + removeItem(item : Borrowable) : void
+  + getItems() : List<Borrowable>
 }
 
+class Student {
+  + getMaxItems() : int
+  + getLoanPeriod() : int
+}
+note bottom of Student : max 3, 14 days
+
+class Staff {
+  + getMaxItems() : int
+  + getLoanPeriod() : int
+}
+note bottom of Staff : max 4, 21 days
+
+class Faculty {
+  + getMaxItems() : int
+  + getLoanPeriod() : int
+}
+note bottom of Faculty : max 5, 30 days
+
 ' ===================== Exceptions =====================
-package "exceptions" {
-  class Exception
-  class LibraryException {
-    + LibraryException(message : String)
-  }
-  class ItemNotFoundException {
-    + ItemNotFoundException(id : String)
-  }
-  class MemberNotFoundException {
-    + MemberNotFoundException(id : String)
-  }
-  class ItemNotAvailableException {
-    + ItemNotAvailableException(message : String)
-  }
-  class BorrowLimitExceededException {
-    + BorrowLimitExceededException(memberId : String, max : int)
-  }
-  class ItemNotOnLoanException {
-    + ItemNotOnLoanException(id : String)
-  }
-  class ReservationNotAllowedException {
-    + ReservationNotAllowedException(message : String)
-  }
+class Exception
+class LibraryException {
+  + LibraryException(message : String)
+}
+class ItemNotFoundException {
+  + ItemNotFoundException(id : String)
+}
+class MemberNotFoundException {
+  + MemberNotFoundException(id : String)
+}
+class ItemNotAvailableException {
+  + ItemNotAvailableException(message : String)
+}
+class BorrowLimitExceededException {
+  + BorrowLimitExceededException(memberId : String, max : int)
+}
+class ItemNotOnLoanException {
+  + ItemNotOnLoanException(id : String)
+}
+class ReservationNotAllowedException {
+  + ReservationNotAllowedException(message : String)
 }
 
 ' ===================== Relationships =====================
