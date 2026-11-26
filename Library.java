@@ -98,7 +98,66 @@ class Library {
         Borrowable b = (Borrowable)item;
 
         b.reserve(member);
-        
+
+    }
+
+    public List<LibraryItem> search(String txt){
+
+        String text = txt.toLowerCase();
+
+        ArrayList<LibraryItem> result = new ArrayList<>();
+
+
+
+        for(Map.Entry<String,LibraryItem> e : items.entrySet()){
+
+            if(e.getValue().getTitle().toLowerCase().contains(text)){
+                result.add(e.getValue());
+            }
+            
+        }
+
+        result.sort(Comparator.comparing(LibraryItem::getTitle));
+
+        return result;
+
+
+
+    }
+
+    public List<LibraryItem> inventory(){
+        return new ArrayList<>(items.values());
+    }
+
+    public List<Borrowable> loansOf(String memberId)throws MemberNotFoundException{
+        Member member = findMember(memberId);
+
+        ArrayList<Borrowable> result = new ArrayList<>(member.getItems());
+
+        result.sort(Comparator.comparing(Borrowable::getDueDay).thenComparing(Borrowable::getId));
+
+        return result;
+
+    }
+
+    public List<Borrowable> overdue(){
+
+        ArrayList<Borrowable> dues= new ArrayList<>();
+
+        for(LibraryItem i : items.values()){
+
+            if(!(i instanceof Borrowable)) continue;
+
+            Borrowable b = (Borrowable) i;
+
+            if(b.isOnLoan() && today > b.getDueDay()) dues.add(b);
+
+        }
+
+        dues.sort(Comparator.comparing(Borrowable::getDueDay).thenComparing(Borrowable::getId));
+
+        return dues;
+
     }
 
 
