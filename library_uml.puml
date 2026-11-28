@@ -15,7 +15,7 @@ class Main {
 }
 
 class CommandProcessor {
-  - library : Library
+  - library : Library {readOnly}
   + CommandProcessor(library : Library)
   + run(in : Scanner) : void
   - process(line : String) : String
@@ -24,6 +24,8 @@ class CommandProcessor {
   - formatLoans(items : List<Borrowable>) : String
   - formatOverdue(items : List<Borrowable>) : String
   - formatInventory(items : Collection<LibraryItem>) : String
+  - formatReturn(r : ReturnResult) : String
+  - joinRows(rows : List<String>) : String
 }
 
 ' ===================== Core =====================
@@ -40,7 +42,7 @@ class Library {
   + search(text : String) : List<LibraryItem>
   + loansOf(memberId : String) : List<Borrowable> {throws MemberNotFoundException}
   + overdue() : List<Borrowable>
-  + inventory() : Collection<LibraryItem>
+  + inventory() : List<LibraryItem>
   + getToday() : int
   - findItem(id : String) : LibraryItem {throws ItemNotFoundException}
   - findMember(id : String) : Member {throws MemberNotFoundException}
@@ -50,6 +52,7 @@ class ReturnResult {
   - fine : int
   - issuedTo : Member
   - newDueDay : int
+  + ReturnResult(fine : int, issuedTo : Member, newDueDay : int)
   + getFine() : int
   + getIssuedTo() : Member
   + getNewDueDay() : int
@@ -129,8 +132,8 @@ abstract class Member {
   + canBorrow() : boolean
   + ensureCanBorrow() : void {throws BorrowLimitExceededException}
   + holds(item : Borrowable) : boolean
-  + addItem(item : Borrowable) : void
-  + removeItem(item : Borrowable) : void
+  + addItem(item : Borrowable) : void {throws BorrowLimitExceededException}
+  + removeItem(item : Borrowable) : void {throws ItemNotOnLoanException}
   + getItems() : List<Borrowable>
 }
 
@@ -215,10 +218,14 @@ CommandProcessor ..> LibraryException : catches
 Library ..> ItemNotFoundException : throws
 Library ..> MemberNotFoundException : throws
 Library ..> ItemNotAvailableException : throws\n("<id> cannot be borrowed")
-Library ..> ItemNotOnLoanException : throws\n(RETURN of a ReferenceBook)
+Library ..> ItemNotOnLoanException : throws\n(RETURN of a ReferenceBook\nor an item not on loan)
 BorrowableItem ..> ItemNotAvailableException : throws\n("<id> is on loan")
 BorrowableItem ..> ItemNotOnLoanException : throws
 BorrowableItem ..> ReservationNotAllowedException : throws
 Member ..> BorrowLimitExceededException : throws
+Member ..> ItemNotOnLoanException : throws
+CommandProcessor ..> ReturnResult : formats
+CommandProcessor ..> LibraryItem : creates
+CommandProcessor ..> Member : creates
 
 @enduml
